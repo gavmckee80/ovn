@@ -73,9 +73,9 @@ match_patch_port(const struct ovsrec_port *port, const char *peer)
  * 'dst_name' in bridge 'dst'.  Initializes the patch port's external-ids:'key'
  * to 'key'.
  *
- * If such a patch port already exists, removes it from 'existing_ports'.
- * Any key-value pairs in 'extra_ids' are merged into the port's
- * external IDs before creation.
+ * If such a patch port already exists, removes it from 'existing_ports'.  Any
+ * key-value pairs in 'extra_ids' are merged into the port's external IDs.  If
+ * the port already exists, its external IDs are updated accordingly.
  */
 static void
 create_patch_port(struct ovsdb_idl_txn *ovs_idl_txn,
@@ -88,7 +88,23 @@ create_patch_port(struct ovsdb_idl_txn *ovs_idl_txn,
     for (size_t i = 0; i < src->n_ports; i++) {
         if (match_patch_port(src->ports[i], dst_name)) {
             /* Patch port already exists on 'src'. */
-            shash_find_and_delete(existing_ports, src->ports[i]->name);
+            const struct ovsrec_port *port = src->ports[i];
+            shash_find_and_delete(existing_ports, port->name);
+            if (extra_ids) {
+                const struct smap *ids = &port->external_ids;
+                struct smap merged = SMAP_INITIALIZER(&merged);
+                smap_clone(&merged, ids);
+                struct smap_node *node;
+                SMAP_FOR_EACH (node, extra_ids) {
+                    const char *cur = smap_get(&merged, node->key);
+                    if (!cur || strcmp(cur, node->value)) {
+                        ovsrec_port_update_external_ids_setkey(port,
+                                                              node->key,
+                                                              node->value);
+                    }
+                }
+                smap_destroy(&merged);
+            }
             return;
         }
     }

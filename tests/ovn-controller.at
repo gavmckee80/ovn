@@ -132,12 +132,18 @@ check_patches
 check_uuid ovn-sbctl \
     -- --id=@dp102 create Datapath_Binding tunnel_key=102 external_ids:name=dp102 \
     -- create Port_Binding datapath=@dp102 logical_port=localnet2 tunnel_key=1 \
-        type=localnet options:network_name=physnet1 \
+        type=localnet options:network_name=physnet1 external_ids:copy=foo \
     -- create Port_Binding datapath=@dp102 logical_port=localvif2 tunnel_key=2
 ovs-vsctl add-port br-int localvif2 -- set Interface localvif2 external_ids:iface-id=localvif2
 check_patches \
     'br-int  patch-br-int-to-localnet2 patch-localnet2-to-br-int' \
     'br-eth0 patch-localnet2-to-br-int patch-br-int-to-localnet2'
+
+# Patch ports should inherit external_ids from the localnet logical port.
+OVS_WAIT_UNTIL([test `ovs-vsctl get Port patch-br-int-to-localnet2 \
+    external_ids:copy` = '"foo"'])
+OVS_WAIT_UNTIL([test `ovs-vsctl get Port patch-localnet2-to-br-int \
+    external_ids:copy` = '"foo"'])
 
 # Add logical patch ports to connect new logical datapath.
 #

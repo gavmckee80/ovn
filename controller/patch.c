@@ -73,7 +73,10 @@ match_patch_port(const struct ovsrec_port *port, const char *peer)
  * 'dst_name' in bridge 'dst'.  Initializes the patch port's external-ids:'key'
  * to 'key'.
  *
- * If such a patch port already exists, removes it from 'existing_ports'. */
+ * If such a patch port already exists, removes it from 'existing_ports'.
+ * Any key-value pairs in 'extra_ids' are merged into the port's
+ * external IDs before creation.
+ */
 static void
 create_patch_port(struct ovsdb_idl_txn *ovs_idl_txn,
                   const char *key, const char *value,

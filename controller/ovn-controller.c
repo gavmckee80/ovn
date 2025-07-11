@@ -5666,7 +5666,6 @@ main(int argc, char *argv[])
 
     ovsdb_idl_omit(ovnsb_idl_loop.idl, &sbrec_sb_global_col_external_ids);
     ovsdb_idl_omit(ovnsb_idl_loop.idl, &sbrec_logical_flow_col_external_ids);
-    ovsdb_idl_omit(ovnsb_idl_loop.idl, &sbrec_port_binding_col_external_ids);
     ovsdb_idl_omit(ovnsb_idl_loop.idl, &sbrec_ssl_col_external_ids);
     ovsdb_idl_omit(ovnsb_idl_loop.idl,
                    &sbrec_gateway_chassis_col_external_ids);
